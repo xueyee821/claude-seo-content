@@ -4,6 +4,7 @@ description: >
   Monthly SEO blog content generator. Generates 8 publication-ready blog articles per month
   for any brand, with full keyword strategy (Tier 1/2/3), SERP competition analysis, AI
   search visibility check (GEO/AEO), hub-and-spoke internal linking, and brand voice.
+  Integrates SE Ranking + Google Search Console + GA4 for fully data-driven topic selection.
   Outputs a formatted DOCX to ~/Downloads. Use this skill whenever the user says things like
   "generate blog content", "monthly blog articles", "write 8 blog posts", "blog content
   strategy", "seo blog", "/seo-blog-monthly", or wants to produce a batch of SEO-optimized
@@ -19,6 +20,7 @@ Full pipeline: brand strategy → keyword research → SERP analysis → AI visi
 
 Reference files (read when needed):
 - `references/brand-onboarding.md` — client questionnaire and saved profile format
+- `references/data-sources.md` — SE Ranking + GSC + GA4 data pull guide and decision framework
 - `references/keyword-strategy.md` — Tier system, hub-and-spoke, intent classification
 - `references/serp-analysis.md` — what to check before writing each article
 - `references/geo-aeo-strategy.md` — writing rules for AI search citation
@@ -56,16 +58,30 @@ A weak brand profile = generic content. Take time here.
 
 ---
 
-## Step 2 — Connect SE Ranking
+## Step 2 — Connect data sources
 
+Read `references/data-sources.md` for the full data pull guide and decision framework.
+
+**SE Ranking (required):**
 Check if SE Ranking MCP tools are available. If not:
 > "This skill uses SE Ranking for live keyword data. Please connect the SE Ranking MCP
 > in your Claude settings first, then try again."
 
-If connected:
-- Call `PROJECT_listProjects` to find the project matching this domain
-- If not found, ask the user which project to use
-- Load the project's tracked keywords and current positions
+If connected: call `PROJECT_listProjects` to find the project matching this domain.
+If not found, ask the user which project to use.
+
+**GSC (use if connected to SE Ranking project):**
+Call `PROJECT_getGoogleSearchConsole` to pull:
+- Top queries by impressions (last 28 days)
+- Queries ranked #4–#30 (opportunity zone)
+- Queries with > 100 impressions and CTR < 3%
+- Queries with clicks but no matching page in sitemap
+
+**GA4 (use if connected):**
+Pull top 20 blog posts by sessions + top 5 by conversions + posts with engagement < 1 min.
+
+If GSC or GA4 are not connected, note this and proceed with SE Ranking data only.
+Do not stop — SE Ranking alone is sufficient, GSC and GA4 make decisions sharper.
 
 ---
 
@@ -79,14 +95,15 @@ Extract all post URLs and titles. This is the "covered topics" list — never du
 ## Step 4 — Keyword strategy
 
 Read `references/keyword-strategy.md` for the full Tier system and hub-and-spoke rules.
+Read `references/data-sources.md` for the combined decision framework.
 
-From SE Ranking data, build three tiers:
+From SE Ranking + GSC + GA4 data, build three tiers:
 
-**Tier 1 — Defend** (positions 1–10, already ranking)
+**Tier 1 — Defend** (SE Ranking positions 1–10, or GA4 top traffic pages)
 Write cluster content to reinforce, not compete. Link back to the ranking page.
 
-**Tier 2 — Attack** (positions 11–50, or gap keywords with real volume)
-Priority: high volume + low KD → buying intent → geo-targeted keywords.
+**Tier 2 — Attack** (SE Ranking positions 11–50 + GSC queries with impressions but no page)
+Priority: GSC queries with clicks but no dedicated URL → high volume + low KD → buying intent.
 
 **Tier 3 — GEO/AEO** (zero/low volume, but high AI citation value)
 Written to be cited by ChatGPT, Perplexity, Google AI Mode — not for organic traffic.
@@ -268,7 +285,9 @@ After saving, confirm file path and size.
 ## Quality checklist
 
 - [ ] Brand profile loaded or completed
-- [ ] SE Ranking project identified and data pulled
+- [ ] SE Ranking project identified and keywords pulled
+- [ ] GSC data pulled (or noted as not connected)
+- [ ] GA4 data pulled (or noted as not connected)
 - [ ] Existing posts audited — no topic duplicates
 - [ ] Keyword tiers assigned (Tier 1/2/3) for all 8 topics
 - [ ] AI visibility checked — gaps and strengths identified
